@@ -45,20 +45,22 @@ class PdfReaderActivity : AppCompatActivity() {
         val toolbar = binding.toolbar
         val intentComicID = intent.getIntExtra("comic_id", -1)
         if (intentComicID == -1) return
-
-        loadPdf(intentComicID)
-
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.visibility = View.INVISIBLE
-        isAppbar = false
-        comicViewModel.allComicsSorted.observe(this) { list ->
+        val sortType = intent.getIntExtra("sort_type", 0)
+        comicViewModel.setSortType(sortType)
+        comicViewModel.displayComics.observe(this) { list ->
             comicList = list
 
             currentIndex = comicList.indexOfFirst {
                 it.id == currentComicID
             }.coerceAtLeast(0)
         }
+        loadPdf(intentComicID)
+
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.visibility = View.INVISIBLE
+        isAppbar = false
+
         binding.btnAutoScroll.setOnClickListener {
             toggleAutoScroll(!isAutoScrollEnabled)
 
@@ -169,13 +171,7 @@ class PdfReaderActivity : AppCompatActivity() {
         }
     }
     private fun showPdfListDialog() {
-        val names = comicList.mapIndexed { index, _ ->
-
-            "Bacaan ${index + 1}"
-
-        }.toTypedArray()
-
-
+        val names = comicList.map { it.judul ?: "Tanpa Judul" }.toTypedArray()
         AlertDialog.Builder(this)
             .setTitle("Daftar Bacaan")
             .setSingleChoiceItems(

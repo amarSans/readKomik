@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
         setupRecycler()
 
-        mainViewModel.allComicsdata.observe(this) { comics ->
+        mainViewModel.displayComics.observe(this) { comics ->
             comicList.clear()
             comicList.addAll(comics)
             pdfAdapter.notifyDataSetChanged()
@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
     private fun bukaPdf(comik: Comik) {
         val intent = Intent(this, PdfReaderActivity::class.java).apply {
             putExtra("comic_id", comik.id)
+            putExtra("sort_type", mainViewModel.getSortType())
         }
         startActivity(intent)
     }
@@ -134,22 +135,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun extractNumber(name: String): Int {
-        val regex = Regex("\\d+")
-        val match = regex.find(name)
-        return match?.value?.toInt() ?: Int.MAX_VALUE
-    }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
 
             R.id.action_sort_name -> {
-                comicList.sortWith(
-                    compareBy(
-                        { extractNumber(it.judul ?: "") },
-                        { it.judul?.lowercase() ?: "" }
-                    )
-                )
-                pdfAdapter.notifyDataSetChanged()
+                mainViewModel.setSortType(2)
                 true
             }
 
