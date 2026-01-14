@@ -1,21 +1,20 @@
 package com.tugasmobile.readkomik.pdf
 
 import android.app.AlertDialog
-import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import android.view.MenuItem
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.tugasmobile.readkomik.ComicViewModel
 import com.tugasmobile.readkomik.R
+import com.tugasmobile.readkomik.data.database.Comik
 import com.tugasmobile.readkomik.databinding.ActivityPdfReaderBinding
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
-import com.tugasmobile.readkomik.data.database.Comik
 
 
 class PdfReaderActivity : AppCompatActivity() {
@@ -26,6 +25,11 @@ class PdfReaderActivity : AppCompatActivity() {
     private var totalPageSaved = false
     private var currentIndex = 0
     private var currentComicID: Int = -1
+
+    private var isAutoScrollEnabled = false
+    private val autoScrollHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val AUTO_SCROLL_DELAY_MS = 16L
+    private val SCROLL_SPEED = 2f
 
     private lateinit var comicViewModel: ComicViewModel
     private var isAppbar = false
@@ -55,7 +59,10 @@ class PdfReaderActivity : AppCompatActivity() {
                 it.id == currentComicID
             }.coerceAtLeast(0)
         }
+        binding.btnAutoScroll.setOnClickListener {
+            toggleAutoScroll(!isAutoScrollEnabled)
 
+        }
 
 
     }
@@ -63,9 +70,37 @@ class PdfReaderActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_pdf_reader, menu)
         return true
     }
+    private val autoScrollRunnable = object : Runnable {
+        override fun run() {
+            if (!isAutoScrollEnabled) return
+
+            val currentY = binding.pdfView.currentYOffset
+            val currentX = binding.pdfView.currentXOffset
+            val nexty = currentY - SCROLL_SPEED
+            binding.pdfView.moveTo(currentX,nexty)
+            binding.pdfView.loadPages()
+            autoScrollHandler.postDelayed(this, AUTO_SCROLL_DELAY_MS)
+
+        }
+
+    }
+    private fun toggleAutoScroll(enable: Boolean) {
+        isAutoScrollEnabled = enable
+        if(enable) {
+            binding.btnAutoScroll.text = "Berhenti Auto Scroll"
+            autoScrollHandler.postDelayed(autoScrollRunnable, AUTO_SCROLL_DELAY_MS)
+        } else {
+            binding.btnAutoScroll.text = "Mulai Auto Scroll"
+            autoScrollHandler.removeCallbacks(autoScrollRunnable)
+        }
+    }
+    private fun stopEverything() {
+        toggleAutoScroll(false)
+    }
 
     private fun loadPdf(comicID: Int) {
         if (comicID == currentComicID) return
+        stopEverything()
         saveCurrentProgress()
         currentComicID = comicID
         lastSavedPage = -1
@@ -158,6 +193,7 @@ class PdfReaderActivity : AppCompatActivity() {
     }
     override fun onStop() {
         super.onStop()
+        stopEverything()
         saveCurrentProgress()
 
     }

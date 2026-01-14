@@ -8,13 +8,28 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
         android:elevation="6dp"
-        android:background="#564778"
+        app:titleTextColor="#FFFFFFFF"
         app:title="proses"/>
 
     <com.github.barteksc.pdfviewer.PDFView
         android:id="@+id/pdfView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <Button
+        android:id="@+id/btnAutoScroll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        app:cornerRadius="50dp"
+        android:textAllCaps="false"
+        android:text="Mulai Scroll"
+        android:textSize="12sp"
+        android:elevation="8dp"
+        android:backgroundTint="?attr/colorOnSecondary"/>
 
 </RelativeLayout>

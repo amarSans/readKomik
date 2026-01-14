@@ -16,7 +16,7 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
         mComicRepository.getAllComics()
     val allComicsSorted: LiveData<List<Comik>> =
         allComicsdata.map { list: List<Comik> ->
-            list.sortedWith(compareBy<Comik> { comic ->
+            list.sortedWith(compareBy { comic ->
                 comic.judul
             })
         }
