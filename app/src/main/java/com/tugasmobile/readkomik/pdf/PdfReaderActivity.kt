@@ -1,0 +1,173 @@
+package com.tugasmobile.readkomik.pdf
+
+import android.app.AlertDialog
+import android.net.Uri
+import android.os.Bundle
+import android.view.Menu
+import android.view.View
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import android.view.MenuItem
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.tugasmobile.readkomik.ComicViewModel
+import com.tugasmobile.readkomik.R
+import com.tugasmobile.readkomik.databinding.ActivityPdfReaderBinding
+import kotlinx.coroutines.launch
+import androidx.core.net.toUri
+import com.tugasmobile.readkomik.data.database.Comik
+
+
+class PdfReaderActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityPdfReaderBinding
+
+    private var comicList: List<Comik> = emptyList()
+    private var lastSavedPage = -1
+    private var totalPageSaved = false
+    private var currentIndex = 0
+    private var currentComicID: Int = -1
+
+    private lateinit var comicViewModel: ComicViewModel
+    private var isAppbar = false
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityPdfReaderBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        enableEdgeToEdge()
+
+        comicViewModel = ViewModelProvider(this).get(ComicViewModel::class.java)
+        setSupportActionBar(binding.toolbar)
+
+        val toolbar = binding.toolbar
+        val intentComicID = intent.getIntExtra("comic_id", -1)
+        if (intentComicID == -1) return
+
+        loadPdf(intentComicID)
+
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.visibility = View.INVISIBLE
+        isAppbar = false
+        comicViewModel.allComicsSorted.observe(this) { list ->
+            comicList = list
+
+            currentIndex = comicList.indexOfFirst {
+                it.id == currentComicID
+            }.coerceAtLeast(0)
+        }
+
+
+
+    }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_pdf_reader, menu)
+        return true
+    }
+
+    private fun loadPdf(comicID: Int) {
+        if (comicID == currentComicID) return
+        saveCurrentProgress()
+        currentComicID = comicID
+        lastSavedPage = -1
+        totalPageSaved = false
+        binding.pdfView.recycle()
+        lifecycleScope.launch {
+            val comic= comicViewModel.getComicById(comicID)?:return@launch
+            val uri = comic.pdfUrl?.toUri()
+
+            binding.pdfView.fromUri(uri)
+                .defaultPage(comic.progress)
+                .enableSwipe(true)
+                .swipeHorizontal(false)
+                .enableDoubletap(false)
+                .onLoad { totalPages ->
+                    if (comic.totalHalaman == 0 && !totalPageSaved) {
+                        comicViewModel.updateTotalHalaman(comicID, totalPages)
+                        totalPageSaved = true
+                    }
+                }
+                .onPageChange { page, _ ->
+                    if (page != lastSavedPage) {
+                        lastSavedPage = page
+                    }
+                }
+                .onTap {
+                    binding.toolbar.visibility =
+                        if (isAppbar) View.INVISIBLE else View.VISIBLE
+                    isAppbar = !isAppbar
+                    true
+                }
+                .load()
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+
+            android.R.id.home -> {
+                finish()
+                true
+            }
+
+            R.id.action_next -> {
+                if (currentIndex < comicList.lastIndex) {
+                    currentIndex++
+                    loadPdf(comicList[currentIndex].id)
+                }
+                true
+            }
+
+            R.id.action_prev -> {
+                if (currentIndex > 0) {
+                    currentIndex--
+                    loadPdf(comicList[currentIndex].id)
+                }
+                true
+            }
+
+            R.id.action_list -> {
+                showPdfListDialog()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    private fun showPdfListDialog() {
+        val names = comicList.mapIndexed { index, _ ->
+
+            "Bacaan ${index + 1}"
+
+        }.toTypedArray()
+
+
+        AlertDialog.Builder(this)
+            .setTitle("Daftar Bacaan")
+            .setSingleChoiceItems(
+                names,
+                currentIndex
+            ) { dialog, which ->
+                if (which != currentIndex) {
+                    saveCurrentProgress()
+                    currentIndex = which
+                    loadPdf(comicList[currentIndex].id)
+                }
+                dialog.dismiss()
+            }
+            .show()
+    }
+    override fun onStop() {
+        super.onStop()
+        saveCurrentProgress()
+
+    }
+    private fun saveCurrentProgress() {
+        if (currentComicID != -1 && lastSavedPage >= 0) {
+            comicViewModel.updateProgress(currentComicID, lastSavedPage)
+        }
+    }
+
+
+
+
+}
