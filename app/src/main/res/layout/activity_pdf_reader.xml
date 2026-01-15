@@ -30,6 +30,6 @@
         android:text="Mulai Scroll"
         android:textSize="12sp"
         android:elevation="8dp"
-        android:backgroundTint="?attr/colorOnSecondary"/>
+        android:backgroundTint="?attr/colorOnBackground"/>
 
 </RelativeLayout>

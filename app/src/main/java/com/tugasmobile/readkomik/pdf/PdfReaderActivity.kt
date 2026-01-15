@@ -25,6 +25,7 @@ class PdfReaderActivity : AppCompatActivity() {
     private var totalPageSaved = false
     private var currentIndex = 0
     private var currentComicID: Int = -1
+    private var isTransitioning = false
 
     private var isAutoScrollEnabled = false
     private val autoScrollHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -81,10 +82,37 @@ class PdfReaderActivity : AppCompatActivity() {
             val nexty = currentY - SCROLL_SPEED
             binding.pdfView.moveTo(currentX,nexty)
             binding.pdfView.loadPages()
+            if (currentY == binding.pdfView.currentYOffset && currentY != 0f) {
+                handleEndOfComic()
+                return
+            }
             autoScrollHandler.postDelayed(this, AUTO_SCROLL_DELAY_MS)
 
         }
 
+    }
+
+    private fun handleEndOfComic() {
+        if (isTransitioning) return
+        if (currentIndex < comicList.lastIndex) {
+            isTransitioning = true
+            stopEverything()
+            autoScrollHandler.postDelayed({
+                if (currentIndex < comicList.lastIndex) {
+
+                    currentIndex++
+                    val nextComicId = comicList[currentIndex].id
+                    android.widget.Toast.makeText(this, "Membaca: ${comicList[currentIndex].judul}", android.widget.Toast.LENGTH_SHORT).show()
+
+                    loadPdf(nextComicId)
+                    isTransitioning = false
+                } else {
+                    stopEverything()
+                }
+            }, 1000)
+        } else {
+            stopEverything()
+        }
     }
     private fun toggleAutoScroll(enable: Boolean) {
         isAutoScrollEnabled = enable
@@ -123,9 +151,25 @@ class PdfReaderActivity : AppCompatActivity() {
                         totalPageSaved = true
                     }
                 }
-                .onPageChange { page, _ ->
+                .onPageChange { page, pageCount ->
                     if (page != lastSavedPage) {
                         lastSavedPage = page
+                    }
+                    if (page == pageCount - 1 ) {
+                        val checkEndOfScroll = object : Runnable {
+                            override fun run() {
+                                if (isTransitioning) return
+                                val currentY = binding.pdfView.currentYOffset
+                                if (currentY == binding.pdfView.currentYOffset && currentY != 0f) {
+                                    handleEndOfComic()
+                                } else {
+                                    if (binding.pdfView.currentPage == binding.pdfView.pageCount - 1) {
+                                        autoScrollHandler.postDelayed(this, 500)
+                                    }
+                                }
+                            }
+                        }
+                        autoScrollHandler.postDelayed(checkEndOfScroll, 500)
                     }
                 }
                 .onTap {
