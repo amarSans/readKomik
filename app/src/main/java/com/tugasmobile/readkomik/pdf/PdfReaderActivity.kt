@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
@@ -42,7 +43,6 @@ class PdfReaderActivity : AppCompatActivity() {
 
         comicViewModel = ViewModelProvider(this).get(ComicViewModel::class.java)
         setSupportActionBar(binding.toolbar)
-
         val toolbar = binding.toolbar
         val intentComicID = intent.getIntExtra("comic_id", -1)
         if (intentComicID == -1) return
@@ -61,11 +61,12 @@ class PdfReaderActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.visibility = View.INVISIBLE
         isAppbar = false
-
+        binding.btnAutoScroll.visibility = View.INVISIBLE
         binding.btnAutoScroll.setOnClickListener {
             toggleAutoScroll(!isAutoScrollEnabled)
-
         }
+
+
 
 
     }
@@ -119,9 +120,11 @@ class PdfReaderActivity : AppCompatActivity() {
         if(enable) {
             binding.btnAutoScroll.text = "Berhenti Auto Scroll"
             autoScrollHandler.postDelayed(autoScrollRunnable, AUTO_SCROLL_DELAY_MS)
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             binding.btnAutoScroll.text = "Mulai Auto Scroll"
             autoScrollHandler.removeCallbacks(autoScrollRunnable)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
     private fun stopEverything() {
@@ -164,17 +167,19 @@ class PdfReaderActivity : AppCompatActivity() {
                                     handleEndOfComic()
                                 } else {
                                     if (binding.pdfView.currentPage == binding.pdfView.pageCount - 1) {
-                                        autoScrollHandler.postDelayed(this, 500)
+                                        autoScrollHandler.postDelayed(this, 1000)
                                     }
                                 }
                             }
                         }
-                        autoScrollHandler.postDelayed(checkEndOfScroll, 500)
+                        autoScrollHandler.postDelayed(checkEndOfScroll, 1000)
                     }
                 }
                 .onTap {
                     binding.toolbar.visibility =
                         if (isAppbar) View.INVISIBLE else View.VISIBLE
+                    binding.btnAutoScroll.visibility =
+                        if(isAppbar) View.INVISIBLE else View.VISIBLE
                     isAppbar = !isAppbar
                     true
                 }
