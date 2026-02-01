@@ -1,6 +1,4 @@
 package com.tugasmobile.readkomik.adapter
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -26,8 +24,7 @@ class PdfAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comik = listPdf[position]
-        val bitmap = BitmapFactory.decodeFile(comik.gambar)
-        holder.binding.gambarpdf.setImageBitmap(bitmap)
+
         holder.binding.tvNamaPdf.text = comik.judul
         if(comik.totalHalaman>0){
             val percent=(comik.progress*100)/comik.totalHalaman

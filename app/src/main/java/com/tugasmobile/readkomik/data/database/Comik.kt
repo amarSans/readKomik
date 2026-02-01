@@ -24,6 +24,4 @@ data class Comik(
     @ColumnInfo(name = "totalHalaman")
     var totalHalaman:Int=0,
 
-    @ColumnInfo(name= "gambar")
-    var gambar:String?=null,
     ): Parcelable

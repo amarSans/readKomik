@@ -1,8 +1,6 @@
 package com.tugasmobile.readkomik
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -16,8 +14,6 @@ import com.tugasmobile.readkomik.adapter.PdfAdapter
 import com.tugasmobile.readkomik.data.database.Comik
 import com.tugasmobile.readkomik.databinding.ActivityMainBinding
 import com.tugasmobile.readkomik.pdf.PdfReaderActivity
-import java.io.File
-import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -126,15 +122,11 @@ class MainActivity : AppCompatActivity() {
                     )
                     hasil.add(name to fileUri)
 
-                    val (totalPages, thumbPath) = extractPdfInfo(fileUri)
-
-
                     val comic = Comik(
                         pdfUrl = fileUri.toString(),
                         judul = name,
                         progress = 0,
-                        totalHalaman = totalPages,
-                        gambar = thumbPath
+                        totalHalaman = 0
                     )
                     mainViewModel.insert(comic)
 
@@ -142,36 +134,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun extractPdfInfo(uri: Uri): Pair<Int, String?> {
-        val fileDescriptor =
-            contentResolver.openFileDescriptor(uri, "r") ?: return 0 to null
-
-        val renderer = PdfRenderer(fileDescriptor)
-        val totalPages = renderer.pageCount
-
-        val page = renderer.openPage(0)
-
-        val bitmap = Bitmap.createBitmap(
-            page.width,
-            page.height,
-            Bitmap.Config.ARGB_8888
-        )
-
-        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-
-        val fileName = "thumb_${System.currentTimeMillis()}.png"
-        val file = File(filesDir, fileName)
-        FileOutputStream(file).use {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
-        }
-
-        page.close()
-        renderer.close()
-        fileDescriptor.close()
-
-        return totalPages to file.absolutePath
-    }
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
