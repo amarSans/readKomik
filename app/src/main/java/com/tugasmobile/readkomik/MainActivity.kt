@@ -8,14 +8,19 @@ import android.os.Bundle
 import android.provider.DocumentsContract
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tugasmobile.readkomik.adapter.PdfAdapter
 import com.tugasmobile.readkomik.data.database.Comik
 import com.tugasmobile.readkomik.databinding.ActivityMainBinding
 import com.tugasmobile.readkomik.pdf.PdfReaderActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
@@ -90,13 +95,47 @@ class MainActivity : AppCompatActivity() {
         }
     private fun loadPdfFromFolder(folderUri: Uri) {
 
-        contentResolver.takePersistableUriPermission(
-            folderUri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
-        )
-        prefs.edit().putString("folder_uri", folderUri.toString()).apply()
+        binding.loadingLayout.visibility = View.VISIBLE
+        binding.rvPdf.visibility = View.GONE
+        binding.fabTambah.isEnabled = false
+        binding.txtProgress.text = "Memindai folder..."
 
-        val hasil = mutableListOf<Pair<String, Uri>>()
+        lifecycleScope.launch {
+            val pdfList = withContext(Dispatchers.IO) {
+                scanPdf(folderUri)
+            }
+
+            val total = pdfList.size
+            var current = 0
+
+            for ((name, uri) in pdfList) {
+                current++
+
+                binding.txtProgress.text = "Memproses $current / $total"
+
+                val (totalPages, thumbPath) = withContext(Dispatchers.IO) {
+                    extractPdfInfo(uri)
+                }
+
+                val comic = Comik(
+                    pdfUrl = uri.toString(),
+                    judul = name,
+                    progress = 0,
+                    totalHalaman = totalPages,
+                    gambar = thumbPath
+                )
+
+                mainViewModel.insert(comic)
+            }
+
+            binding.loadingLayout.visibility = View.GONE
+            binding.rvPdf.visibility = View.VISIBLE
+            binding.fabTambah.isEnabled = true
+        }
+    }
+    private fun scanPdf(folderUri: Uri): List<Pair<String, Uri>> {
+        val result = mutableListOf<Pair<String, Uri>>()
+
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             folderUri,
             DocumentsContract.getTreeDocumentId(folderUri)
@@ -118,29 +157,17 @@ class MainActivity : AppCompatActivity() {
                 val name = cursor.getString(1)
                 val mime = cursor.getString(2)
 
-                if (mime == "application/pdf")
-                {
+                if (mime == "application/pdf") {
                     val fileUri = DocumentsContract.buildDocumentUriUsingTree(
                         folderUri,
                         docId
                     )
-                    hasil.add(name to fileUri)
-
-                    val (totalPages, thumbPath) = extractPdfInfo(fileUri)
-
-
-                    val comic = Comik(
-                        pdfUrl = fileUri.toString(),
-                        judul = name,
-                        progress = 0,
-                        totalHalaman = totalPages,
-                        gambar = thumbPath
-                    )
-                    mainViewModel.insert(comic)
-
+                    result.add(name to fileUri)
                 }
             }
         }
+
+        return result
     }
     private fun extractPdfInfo(uri: Uri): Pair<Int, String?> {
         val fileDescriptor =
