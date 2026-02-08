@@ -32,6 +32,7 @@ class PdfReaderActivity : AppCompatActivity() {
     private val autoScrollHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val AUTO_SCROLL_DELAY_MS = 16L
     private val SCROLL_SPEED = 2f
+    private var scrollontab=false
 
     private lateinit var comicViewModel: ComicViewModel
     private var isAppbar = false
@@ -95,7 +96,7 @@ class PdfReaderActivity : AppCompatActivity() {
 
     private fun handleEndOfComic() {
         if (isTransitioning) return
-        if (currentIndex < comicList.lastIndex) {
+        if (currentIndex < comicList.lastIndex ) {
             isTransitioning = true
             stopEverything()
             autoScrollHandler.postDelayed({
@@ -117,11 +118,13 @@ class PdfReaderActivity : AppCompatActivity() {
     }
     private fun toggleAutoScroll(enable: Boolean) {
         isAutoScrollEnabled = enable
+        scrollontab=true
         if(enable) {
             binding.btnAutoScroll.text = "Berhenti Auto Scroll"
             autoScrollHandler.postDelayed(autoScrollRunnable, AUTO_SCROLL_DELAY_MS)
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
+            scrollontab=false
             binding.btnAutoScroll.text = "Mulai Auto Scroll"
             autoScrollHandler.removeCallbacks(autoScrollRunnable)
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -137,6 +140,7 @@ class PdfReaderActivity : AppCompatActivity() {
         saveCurrentProgress()
         currentComicID = comicID
         lastSavedPage = -1
+        scrollontab=false
         totalPageSaved = false
         binding.pdfView.recycle()
         lifecycleScope.launch {
@@ -163,7 +167,7 @@ class PdfReaderActivity : AppCompatActivity() {
                             override fun run() {
                                 if (isTransitioning) return
                                 val currentY = binding.pdfView.currentYOffset
-                                if (currentY == binding.pdfView.currentYOffset && currentY != 0f) {
+                                if (currentY == binding.pdfView.currentYOffset && currentY != 0f && scrollontab==true) {
                                     handleEndOfComic()
                                 } else {
                                     if (binding.pdfView.currentPage == binding.pdfView.pageCount - 1) {
