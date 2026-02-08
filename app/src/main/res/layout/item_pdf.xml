@@ -13,11 +13,13 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
-            android:layout_width="40dp"
-            android:layout_height="60dp"
+        <com.google.android.material.imageview.ShapeableImageView
+            android:layout_width="60dp"
+            android:layout_height="80dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background"/>
+            app:shapeAppearanceOverlay="@style/RoundedRect"
+            android:src="@drawable/pdf_icon"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
