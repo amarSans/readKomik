@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/back_app_color_icon" />
-    <foreground android:drawable="@drawable/icon_aplikasi" />
-    <monochrome android:drawable="@drawable/icon_aplikasi" />
+    <foreground android:drawable="@drawable/icon_apkreadkomik" />
+    <monochrome android:drawable="@drawable/icon_apkreadkomik" />
 </adaptive-icon>
