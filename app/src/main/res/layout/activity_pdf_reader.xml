@@ -11,7 +11,6 @@
         android:background="?attr/colorPrimary"
         android:elevation="6dp"
         app:titleTextColor="#FFFFFFFF"
-        app:title="proses"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -24,23 +23,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"/>
 
-
-    <!--<Button
-        android:id="@+id/btnAutoScroll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="32dp"
-        app:cornerRadius="50dp"
-        android:textAllCaps="false"
-        android:text="Mulai Scroll"
-        android:textSize="12sp"
-        android:elevation="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:backgroundTint="?attr/colorOnBackground"/>-->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
