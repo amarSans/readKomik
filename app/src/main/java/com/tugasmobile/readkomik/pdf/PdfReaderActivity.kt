@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.tugasmobile.readkomik.ComicViewModel
 import com.tugasmobile.readkomik.R
@@ -184,6 +185,12 @@ class PdfReaderActivity : AppCompatActivity() {
                 .enableSwipe(true)
                 .swipeHorizontal(false)
                 .enableDoubletap(false)
+                .enableAntialiasing(true)
+                .pageFitPolicy(FitPolicy.WIDTH)
+                .autoSpacing(false)
+                .fitEachPage(true)
+                .pageSnap(false)
+                .pageFling(false)
                 .onLoad { totalPages ->
                     if (comic.totalHalaman == 0 && !totalPageSaved) {
                         comicViewModel.updateTotalHalaman(comicID, totalPages)
