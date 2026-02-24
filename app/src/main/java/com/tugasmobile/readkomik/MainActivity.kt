@@ -137,13 +137,11 @@ class MainActivity : AppCompatActivity() {
     private fun scrollToUnread() {
 
         val position = comicList.indexOfFirst { comic ->
-            comic.progress == 0   // atau comic.progress == null jika nullable
+            comic.progress == 0
         }
-
         if (position != -1) {
             binding.rvPdf.smoothScrollToPosition(position)
         } else {
-            // Jika semua sudah dibaca, scroll ke atas
             binding.rvPdf.smoothScrollToPosition(0)
         }
     }

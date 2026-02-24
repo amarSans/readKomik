@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <color name="bacgroud_icon">#04F5FF</color>
     <!-- ================= LIGHT THEME ================= -->
 
     <!-- Warna utama aplikasi (misal: tombol, header) -->
