@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.tugasmobile.readkomik.ComicViewModel
 import com.tugasmobile.readkomik.R
 import com.tugasmobile.readkomik.data.database.Comik
@@ -27,7 +28,7 @@ class PdfReaderActivity : AppCompatActivity() {
     private var currentIndex = 0
     private var currentComicID: Int = -1
     private var isTransitioning = false
-
+    private var optionsMenu: Menu? = null
     private var isAutoScrollEnabled = false
     private val autoScrollHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val AUTO_SCROLL_DELAY_MS = 16L
@@ -57,15 +58,39 @@ class PdfReaderActivity : AppCompatActivity() {
             }.coerceAtLeast(0)
         }
         loadPdf(intentComicID)
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+
+                R.id.nav_scroll -> {
+                    toggleAutoScroll(!isAutoScrollEnabled)
+                    true
+                }
+
+                R.id.nav_next -> {
+                    if (currentIndex < comicList.lastIndex) {
+                        currentIndex++
+                        loadPdf(comicList[currentIndex].id)
+                    }
+                    true
+                }
+
+                R.id.nav_back -> {
+                    if (currentIndex > 0) {
+                        currentIndex--
+                        loadPdf(comicList[currentIndex].id)
+                    }
+                    true
+                }
+
+                else -> false
+            }
+        }
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.visibility = View.INVISIBLE
         isAppbar = false
-        binding.btnAutoScroll.visibility = View.INVISIBLE
-        binding.btnAutoScroll.setOnClickListener {
-            toggleAutoScroll(!isAutoScrollEnabled)
-        }
+        binding.bottomNavigation.visibility = View.INVISIBLE
 
 
 
@@ -73,6 +98,7 @@ class PdfReaderActivity : AppCompatActivity() {
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_pdf_reader, menu)
+        optionsMenu = menu
         return true
     }
     private val autoScrollRunnable = object : Runnable {
@@ -118,17 +144,20 @@ class PdfReaderActivity : AppCompatActivity() {
     }
     private fun toggleAutoScroll(enable: Boolean) {
         isAutoScrollEnabled = enable
-        scrollontab=true
-        if(enable) {
-            binding.btnAutoScroll.text = "Berhenti Auto Scroll"
+        scrollontab = enable
+
+        val scrollItem = binding.bottomNavigation.menu.findItem(R.id.nav_scroll)
+
+        if (enable) {
+            scrollItem?.setIcon(R.drawable.pause) // icon pause
             autoScrollHandler.postDelayed(autoScrollRunnable, AUTO_SCROLL_DELAY_MS)
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
-            scrollontab=false
-            binding.btnAutoScroll.text = "Mulai Auto Scroll"
+            scrollItem?.setIcon(R.drawable.play_button) // icon play
             autoScrollHandler.removeCallbacks(autoScrollRunnable)
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
+
     }
     private fun stopEverything() {
         toggleAutoScroll(false)
@@ -180,11 +209,7 @@ class PdfReaderActivity : AppCompatActivity() {
                     }
                 }
                 .onTap {
-                    binding.toolbar.visibility =
-                        if (isAppbar) View.INVISIBLE else View.VISIBLE
-                    binding.btnAutoScroll.visibility =
-                        if(isAppbar) View.INVISIBLE else View.VISIBLE
-                    isAppbar = !isAppbar
+                    toggleToolbar()
                     true
                 }
                 .load()
@@ -199,22 +224,6 @@ class PdfReaderActivity : AppCompatActivity() {
                 true
             }
 
-            R.id.action_next -> {
-                if (currentIndex < comicList.lastIndex) {
-                    currentIndex++
-                    loadPdf(comicList[currentIndex].id)
-                }
-                true
-            }
-
-            R.id.action_prev -> {
-                if (currentIndex > 0) {
-                    currentIndex--
-                    loadPdf(comicList[currentIndex].id)
-                }
-                true
-            }
-
             R.id.action_list -> {
                 showPdfListDialog()
                 true
@@ -222,6 +231,18 @@ class PdfReaderActivity : AppCompatActivity() {
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    private fun toggleToolbar() {
+        binding.toolbar.visibility =
+            if (isAppbar) View.INVISIBLE else View.VISIBLE
+
+        binding.bottomNavigation.visibility =
+            if (isAppbar) View.INVISIBLE else View.VISIBLE
+
+        binding.bottomNavigation.visibility =
+            if (isAppbar) View.INVISIBLE else View.VISIBLE
+
+        isAppbar = !isAppbar
     }
     private fun showPdfListDialog() {
         val names = comicList.map { it.judul ?: "Tanpa Judul" }.toTypedArray()
