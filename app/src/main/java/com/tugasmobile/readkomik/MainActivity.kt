@@ -134,12 +134,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private fun scrollToUnread() {
+
+        val position = comicList.indexOfFirst { comic ->
+            comic.progress == 0   // atau comic.progress == null jika nullable
+        }
+
+        if (position != -1) {
+            binding.rvPdf.smoothScrollToPosition(position)
+        } else {
+            // Jika semua sudah dibaca, scroll ke atas
+            binding.rvPdf.smoothScrollToPosition(0)
+        }
+    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
 
             R.id.action_sort_name -> {
                 mainViewModel.setSortType(2)
+                true
+            }
+            R.id.action_last ->{
+                scrollToUnread()
                 true
             }
 

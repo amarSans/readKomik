@@ -4,7 +4,11 @@
 
     <item
         android:id="@+id/action_sort_name"
-        android:title="Urutkan Nama"
+        android:title="@string/urutkan_nama"
         app:showAsAction="never" />
-
+    <item
+        android:id="@+id/action_last"
+        android:icon="@drawable/rounded_arrow_downward_24"
+        android:title="last read"
+        app:showAsAction="ifRoom" />
 </menu>
