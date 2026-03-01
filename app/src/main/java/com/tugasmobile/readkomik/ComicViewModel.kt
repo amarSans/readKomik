@@ -17,27 +17,18 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
         ComicRepository(application)
     val allComicsdata: LiveData<List<Comik>> =
         mComicRepository.getAllComics()
-    private val _sortType = MutableLiveData<Int>(0)
-    // 2. SATU-SATUNYA LiveData yang perlu di-observe oleh Activity
-    val displayComics: LiveData<List<Comik>> = _sortType.switchMap { type ->
-        mComicRepository.getAllComics().map { list ->
-            when (type) {
-                1 -> list.sortedBy { it.judul?.lowercase() } // A-Z
-                2 -> list.sortedWith(
+    val displayComics: LiveData<List<Comik>> =
+        mComicRepository.getAllComics().map {
+            list ->
+            list.sortedWith(
                     compareBy(
                         { extractNumber(it.judul ?: "") },
                         { it.judul?.lowercase() ?: "" }
                     )
-                ) // Berdasarkan Angka
-                else -> list // Default (berdasarkan input database)
-            }
-        }
-    }
-    fun setSortType(type: Int) {
-        _sortType.value = type
-    }
-    fun getSortType(): Int = _sortType.value ?: 0
+                )
 
+
+    }
 
     private fun extractNumber(name: String): Int {
         val regex = Regex("\\d+")

@@ -49,8 +49,7 @@ class PdfReaderActivity : AppCompatActivity() {
         val toolbar = binding.toolbar
         val intentComicID = intent.getIntExtra("comic_id", -1)
         if (intentComicID == -1) return
-        val sortType = intent.getIntExtra("sort_type", 0)
-        comicViewModel.setSortType(sortType)
+
         comicViewModel.displayComics.observe(this) { list ->
             comicList = list
 

@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     private fun bukaPdf(comik: Comik) {
         val intent = Intent(this, PdfReaderActivity::class.java).apply {
             putExtra("comic_id", comik.id)
-            putExtra("sort_type", mainViewModel.getSortType())
         }
         startActivity(intent)
     }
@@ -159,10 +158,6 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
 
-            R.id.action_sort_name -> {
-                mainViewModel.setSortType(2)
-                true
-            }
             R.id.action_last ->{
                 scrollToUnread()
                 true
