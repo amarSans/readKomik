@@ -1,6 +1,5 @@
 package com.tugasmobile.readkomik.pdf
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -11,10 +10,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.github.barteksc.pdfviewer.util.FitPolicy
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.sidesheet.SideSheetDialog
 import com.tugasmobile.readkomik.ComicViewModel
 import com.tugasmobile.readkomik.R
+import com.tugasmobile.readkomik.adapter.DialogAdapter
 import com.tugasmobile.readkomik.data.database.Comik
 import com.tugasmobile.readkomik.databinding.ActivityPdfReaderBinding
 import kotlinx.coroutines.launch
@@ -257,21 +259,23 @@ class PdfReaderActivity : AppCompatActivity() {
         isAppbar = !isAppbar
     }
     private fun showPdfListDialog() {
-        val names = comicList.map { it.judul ?: "Tanpa Judul" }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("Daftar Bacaan")
-            .setSingleChoiceItems(
-                names,
-                currentIndex
-            ) { dialog, which ->
-                if (which != currentIndex) {
-                    saveCurrentProgress()
-                    currentIndex = which
-                    loadPdf(comicList[currentIndex].id)
-                }
-                dialog.dismiss()
+        val dialog = SideSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_pdf_list, null)
+
+        val recycler = view.findViewById<RecyclerView>(R.id.recyclerChapters)
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        recycler.adapter = DialogAdapter(comicList, currentIndex) { index ->
+            if (index != currentIndex) {
+                saveCurrentProgress()
+                currentIndex = index
+                loadPdf(comicList[currentIndex].id)
             }
-            .show()
+            dialog.dismiss()
+        }
+
+        dialog.setContentView(view)
+        dialog.show()
     }
     override fun onStop() {
         super.onStop()
