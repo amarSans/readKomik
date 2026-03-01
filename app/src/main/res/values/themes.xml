@@ -16,4 +16,13 @@
 
     <style name="Theme.ReadKomik" parent="Base.Theme.ReadKomik" />
 
+    <style name="Theme.ReadKomik.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.ReadKomik.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.ReadKomik.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>

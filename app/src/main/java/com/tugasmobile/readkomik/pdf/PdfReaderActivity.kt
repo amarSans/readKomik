@@ -169,7 +169,6 @@ class PdfReaderActivity : AppCompatActivity() {
         stopEverything()
         saveCurrentProgress()
         currentComicID = comicID
-        lastSavedPage = -1
         scrollontab=false
         totalPageSaved = false
         binding.pdfView.recycle()
@@ -187,7 +186,6 @@ class PdfReaderActivity : AppCompatActivity() {
                 .enableDoubletap(false)
                 .enableAntialiasing(true)
                 .pageFitPolicy(FitPolicy.WIDTH)
-                .autoSpacing(false)
                 .fitEachPage(true)
                 .pageSnap(false)
                 .pageFling(false)

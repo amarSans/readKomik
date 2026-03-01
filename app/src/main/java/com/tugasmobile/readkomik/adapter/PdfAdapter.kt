@@ -27,7 +27,7 @@ class PdfAdapter(
 
         holder.binding.tvNamaPdf.text = comik.judul
         if(comik.totalHalaman>0){
-            val percent=(comik.progress*100)/comik.totalHalaman
+            val percent=((comik.progress+1)*100)/comik.totalHalaman
             holder.binding.progressBaca.max=100
             holder.binding.progressBaca.progress=percent
 
