@@ -7,8 +7,12 @@
         android:title="@string/urutkan_nama"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_last_read"
+        android:title="@string/terakhir_dibaca"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/action_last"
         android:icon="@drawable/rounded_arrow_downward_24"
-        android:title="last read"
+        android:title="@string/belum_dibaca"
         app:showAsAction="ifRoom" />
 </menu>

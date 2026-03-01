@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/nav_back"
-        android:icon="@drawable/outline_chevron_left_24"
-        android:title="back" />
+
 
     <item
         android:id="@+id/nav_scroll"
         android:icon="@drawable/play_button"
-        android:title="auto_scroll" />
+        android:title="@string/auto_scroll" />
+
+    <item
+        android:id="@+id/nav_back"
+        android:icon="@drawable/left_arrow"
+        android:title="@string/back" />
 
     <item
         android:id="@+id/nav_next"
-        android:icon="@drawable/baseline_navigate_next_24"
-        android:title="next" />
+        android:icon="@drawable/right_arrow"
+        android:title="@string/next" />
 
 </menu>

@@ -175,7 +175,7 @@ class PdfReaderActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val comic= comicViewModel.getComicById(comicID)?:return@launch
             val OriTitle=comic.judul ?: "tanpa judul"
-            val numberOnly = OriTitle.replace(Regex("[^0-9]"), "")
+            val numberOnly = OriTitle.replace(Regex("[^0-9,.]"), "")
             supportActionBar?.title= if(numberOnly.isNotEmpty()) numberOnly else "-"
             val uri = comic.pdfUrl?.toUri()
 
