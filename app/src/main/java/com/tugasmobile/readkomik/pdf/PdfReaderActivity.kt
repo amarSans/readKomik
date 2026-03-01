@@ -198,6 +198,11 @@ class PdfReaderActivity : AppCompatActivity() {
                 .onPageChange { page, pageCount ->
                     if (page != lastSavedPage) {
                         lastSavedPage = page
+
+                        getSharedPreferences("pdf_prefs",MODE_PRIVATE)
+                            .edit()
+                            .putInt("last_comic_id", comicID)
+                            .apply()
                     }
                     if (page == pageCount - 1 ) {
                         val checkEndOfScroll = object : Runnable {

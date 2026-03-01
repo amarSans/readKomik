@@ -61,6 +61,16 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(intent)
     }
+    private fun lastRead() {
+        val prefs = getSharedPreferences("pdf_prefs", MODE_PRIVATE)
+        val lastId = prefs.getInt("last_comic_id", -1)
+
+        if (lastId == -1) return
+
+        val intent = Intent(this, PdfReaderActivity::class.java)
+        intent.putExtra("comic_id", lastId)
+        startActivity(intent)
+    }
 
     private fun setupRecycler() {
         pdfAdapter = PdfAdapter(comicList) { comic, _ ->
@@ -155,6 +165,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_last ->{
                 scrollToUnread()
+                true
+            }
+            R.id.action_last_read -> {
+                lastRead()
                 true
             }
 
