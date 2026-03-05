@@ -1,29 +1,29 @@
-package com.tugasmobile.readkomik
+package com.tugasmobile.readkomik.page.pdf
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.tugasmobile.readkomik.data.ComicRepository
 import com.tugasmobile.readkomik.data.database.Comik
 import kotlinx.coroutines.launch
 
-class ComicViewModel(application: Application): AndroidViewModel(application) {
-    private val mComicRepository: ComicRepository =
+class PdfReaderViewModel(application: Application): AndroidViewModel(application) {
+    private val comicrepository: ComicRepository =
         ComicRepository(application)
+
     val displayComics: LiveData<List<Comik>> =
-        mComicRepository.getAllComics().map {
-            list ->
+        comicrepository.getAllComics().map {
+                list ->
             list.sortedWith(
-                    compareBy(
-                        { extractNumber(it.judul ?: "") },
-                        { it.judul?.lowercase() ?: "" }
-                    )
+                compareBy(
+                    { extractNumber(it.judul ?: "") },
+                    { it.judul?.lowercase() ?: "" }
                 )
-
-
-    }
+            )
+        }
 
     private fun extractNumber(name: String): Int {
         val regex = Regex("\\d+")
@@ -33,27 +33,25 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
 
 
     fun insert(comic: Comik){
-        viewModelScope.launch { mComicRepository.insert(comic) }
+        viewModelScope.launch { comicrepository.insert(comic) }
     }
     fun update(comic: Comik){
-        mComicRepository.update(comic)
+        comicrepository.update(comic)
     }
     fun deleteAll(){
-        viewModelScope.launch { mComicRepository.deleteAll() }
+        viewModelScope.launch { comicrepository.deleteAll() }
     }
     suspend fun getComicById(id: Int): Comik? {
-         return mComicRepository.getComicById(id)
+        return comicrepository.getComicById(id)
     }
     fun updateTotalHalaman(comicID: Int, total: Int){
         viewModelScope.launch {
-            mComicRepository.updateTotalHalaman(comicID, total)
+            comicrepository.updateTotalHalaman(comicID, total)
         }
     }
 
     fun updateProgress(comikId: Int, page: Int){
         viewModelScope.launch {
-        mComicRepository.updateProgress(comikId, page)
-    } }
-
-
+            comicrepository.updateProgress(comikId, page)
+        } }
 }

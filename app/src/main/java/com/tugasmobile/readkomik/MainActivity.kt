@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.tugasmobile.readkomik.adapter.PdfAdapter
 import com.tugasmobile.readkomik.data.database.Comik
 import com.tugasmobile.readkomik.databinding.ActivityMainBinding
-import com.tugasmobile.readkomik.pdf.PdfReaderActivity
+import com.tugasmobile.readkomik.page.pdf.PdfReaderActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -144,12 +144,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun scrollToUnread() {
-
+        val prefs = getSharedPreferences("pdf_prefs", MODE_PRIVATE)
+        val lastId = prefs.getInt("last_comic_id", -1)
         val position = comicList.indexOfFirst { comic ->
-            comic.progress == 0
+            comicList.indexOf(comic) != -1 && comic.id == lastId
         }
         if (position != -1) {
-            binding.rvPdf.smoothScrollToPosition(position)
+            binding.rvPdf.post{
+                binding.rvPdf.smoothScrollToPosition(position)
+            }
         } else {
             binding.rvPdf.smoothScrollToPosition(0)
         }

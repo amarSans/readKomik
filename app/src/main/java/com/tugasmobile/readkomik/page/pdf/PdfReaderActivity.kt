@@ -1,10 +1,13 @@
-package com.tugasmobile.readkomik.pdf
+package com.tugasmobile.readkomik.page.pdf
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
@@ -33,12 +36,12 @@ class PdfReaderActivity : AppCompatActivity() {
     private var isTransitioning = false
     private var optionsMenu: Menu? = null
     private var isAutoScrollEnabled = false
-    private val autoScrollHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val autoScrollHandler = Handler(Looper.getMainLooper())
     private val AUTO_SCROLL_DELAY_MS = 16L
     private val SCROLL_SPEED = 2f
     private var scrollontab=false
 
-    private lateinit var comicViewModel: ComicViewModel
+    private lateinit var comicViewModel: PdfReaderViewModel
     private var isAppbar = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +49,7 @@ class PdfReaderActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        comicViewModel = ViewModelProvider(this).get(ComicViewModel::class.java)
+        comicViewModel = ViewModelProvider(this).get(PdfReaderViewModel::class.java)
         setSupportActionBar(binding.toolbar)
         val toolbar = binding.toolbar
         val intentComicID = intent.getIntExtra("comic_id", -1)
@@ -132,7 +135,7 @@ class PdfReaderActivity : AppCompatActivity() {
 
                     currentIndex++
                     val nextComicId = comicList[currentIndex].id
-                    android.widget.Toast.makeText(this, "Membaca: ${comicList[currentIndex].judul}", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Membaca: ${comicList[currentIndex].judul}", Toast.LENGTH_SHORT).show()
 
                     loadPdf(nextComicId)
                     isTransitioning = false
@@ -265,10 +268,14 @@ class PdfReaderActivity : AppCompatActivity() {
         val recycler = view.findViewById<RecyclerView>(R.id.recyclerChapters)
         recycler.layoutManager = LinearLayoutManager(this)
 
-        recycler.adapter = DialogAdapter(comicList, currentIndex) { index ->
-            if (index != currentIndex) {
+        val rotatedList = comicList.drop(currentIndex) + comicList.take(currentIndex)
+
+        recycler.adapter = DialogAdapter(rotatedList, 0) { index ->
+            val realIndex = (index + currentIndex) % comicList.size
+
+            if (realIndex != currentIndex) {
                 saveCurrentProgress()
-                currentIndex = index
+                currentIndex = realIndex
                 loadPdf(comicList[currentIndex].id)
             }
             dialog.dismiss()

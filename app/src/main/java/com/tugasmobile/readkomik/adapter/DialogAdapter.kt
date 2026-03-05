@@ -31,7 +31,6 @@ class DialogAdapter(
 
         holder.binding.tvTitle.text = item.judul ?: "Tanpa Judul"
 
-        // Tandai item aktif
         holder.itemView.isSelected = position == currentIndex
 
         holder.itemView.setOnClickListener {

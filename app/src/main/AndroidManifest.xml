@@ -18,7 +18,7 @@
             android:label="@string/title_activity_home"
             android:theme="@style/Theme.ReadKomik.NoActionBar" />
         <activity
-            android:name=".pdf.PdfReaderActivity"
+            android:name=".page.pdf.PdfReaderActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
