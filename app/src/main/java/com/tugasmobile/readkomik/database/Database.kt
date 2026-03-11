@@ -1,14 +1,18 @@
-package com.tugasmobile.readkomik.data.database
+package com.tugasmobile.readkomik.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.tugasmobile.readkomik.data.Comik
+import com.tugasmobile.readkomik.data.FolderComik
 
-@Database(entities = [Comik::class], version = 1, exportSchema = false)
+@Database(entities = [Comik::class, FolderComik::class], version = 2, exportSchema = false)
 abstract class DatabaseComic : RoomDatabase() {
 
     abstract fun comicDao(): ComicDao
+    abstract fun folderDao(): FolderDao
+
 
     companion object {
         @Volatile

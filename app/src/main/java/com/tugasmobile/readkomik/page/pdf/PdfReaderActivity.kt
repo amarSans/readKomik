@@ -17,10 +17,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.google.android.material.sidesheet.SideSheetDialog
-import com.tugasmobile.readkomik.ComicViewModel
 import com.tugasmobile.readkomik.R
 import com.tugasmobile.readkomik.adapter.DialogAdapter
-import com.tugasmobile.readkomik.data.database.Comik
+import com.tugasmobile.readkomik.data.Comik
 import com.tugasmobile.readkomik.databinding.ActivityPdfReaderBinding
 import kotlinx.coroutines.launch
 

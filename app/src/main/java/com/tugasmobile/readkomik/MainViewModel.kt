@@ -5,11 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import com.tugasmobile.readkomik.data.ComicRepository
-import com.tugasmobile.readkomik.data.database.Comik
+import com.tugasmobile.readkomik.database.ComicRepository
+import com.tugasmobile.readkomik.data.Comik
+import com.tugasmobile.readkomik.data.FolderComik
 import kotlinx.coroutines.launch
 
-class ComicViewModel(application: Application): AndroidViewModel(application) {
+class MainViewModel(application: Application): AndroidViewModel(application) {
     private val mComicRepository: ComicRepository =
         ComicRepository(application)
     val displayComics: LiveData<List<Comik>> =
@@ -24,6 +25,7 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
 
 
     }
+    val displayFolder : LiveData<List<FolderComik>> = mComicRepository.getAllFolders()
 
     private fun extractNumber(name: String): Int {
         val regex = Regex("\\d+")
@@ -35,25 +37,18 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
     fun insert(comic: Comik){
         viewModelScope.launch { mComicRepository.insert(comic) }
     }
-    fun update(comic: Comik){
-        mComicRepository.update(comic)
-    }
+
     fun deleteAll(){
         viewModelScope.launch { mComicRepository.deleteAll() }
     }
-    suspend fun getComicById(id: Int): Comik? {
-         return mComicRepository.getComicById(id)
-    }
-    fun updateTotalHalaman(comicID: Int, total: Int){
-        viewModelScope.launch {
-            mComicRepository.updateTotalHalaman(comicID, total)
-        }
+
+    suspend fun insertFolder(folder: FolderComik): Int {
+        return mComicRepository.insertFolder(folder)
     }
 
-    fun updateProgress(comikId: Int, page: Int){
-        viewModelScope.launch {
-        mComicRepository.updateProgress(comikId, page)
-    } }
+    suspend fun getFolderByPath(path: String): FolderComik? {
+        return mComicRepository.getFolderByPath(path)
+    }
 
 
 }

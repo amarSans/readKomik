@@ -2,7 +2,7 @@ package com.tugasmobile.readkomik.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.tugasmobile.readkomik.data.database.Comik
+import com.tugasmobile.readkomik.data.Comik
 import com.tugasmobile.readkomik.databinding.ItemPdfBinding
 
 class PdfAdapter(

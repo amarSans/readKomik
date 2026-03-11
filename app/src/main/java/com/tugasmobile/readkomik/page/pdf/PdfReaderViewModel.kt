@@ -3,11 +3,10 @@ package com.tugasmobile.readkomik.page.pdf
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import com.tugasmobile.readkomik.data.ComicRepository
-import com.tugasmobile.readkomik.data.database.Comik
+import com.tugasmobile.readkomik.database.ComicRepository
+import com.tugasmobile.readkomik.data.Comik
 import kotlinx.coroutines.launch
 
 class PdfReaderViewModel(application: Application): AndroidViewModel(application) {
