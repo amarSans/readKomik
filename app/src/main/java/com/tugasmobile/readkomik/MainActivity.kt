@@ -3,16 +3,14 @@ package com.tugasmobile.readkomik
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.result.contract.ActivityResultContracts
+import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.tugasmobile.readkomik.adapter.FolderAdapter
 import com.tugasmobile.readkomik.data.Comik
 import com.tugasmobile.readkomik.data.FolderComik
@@ -43,8 +41,10 @@ class MainActivity : AppCompatActivity() {
         if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
             == android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
+            startRefreshAnimation()
             lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 scanAllPdf()
+                runOnUiThread { stopRefreshAnimation() }
             }
         } else {
             requestPermissions(
@@ -53,6 +53,14 @@ class MainActivity : AppCompatActivity() {
             )
         }
         setSupportActionBar(binding.toolbar)
+
+        binding.refresh.setOnClickListener {
+            startRefreshAnimation()
+            lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                scanAllPdf()
+                runOnUiThread { stopRefreshAnimation() }
+            }
+        }
 
 
     }
@@ -191,5 +199,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startRefreshAnimation() {
+        val refreshAnimation = AnimationUtils.loadAnimation(this, R.anim.rotation)
+        binding.refresh.startAnimation(refreshAnimation)
+    }
+
+    private fun stopRefreshAnimation() {
+        binding.refresh.clearAnimation()
+    }
 
 }
