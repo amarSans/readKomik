@@ -43,4 +43,10 @@ class DialogAdapter(
             onClick(position)
         }
     }
+    fun updateSelected(index: Int) {
+        val old = currentIndex
+        currentIndex = index
+        notifyItemChanged(old)
+        notifyItemChanged(currentIndex)
+    }
 }

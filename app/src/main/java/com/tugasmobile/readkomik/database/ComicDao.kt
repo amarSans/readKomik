@@ -10,7 +10,7 @@ import com.tugasmobile.readkomik.data.Comik
 
 @Dao
 interface ComicDao {
-    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(comic: Comik)
 
     @Query("DELETE FROM comik")

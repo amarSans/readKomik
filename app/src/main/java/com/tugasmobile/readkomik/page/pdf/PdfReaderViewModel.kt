@@ -13,9 +13,8 @@ class PdfReaderViewModel(application: Application): AndroidViewModel(application
     private val comicrepository: ComicRepository =
         ComicRepository(application)
 
-    val displayComics: LiveData<List<Comik>> =
-        comicrepository.getAllComics().map {
-                list ->
+    fun getComicsByFolder(folderId: Int): LiveData<List<Comik>> {
+        return comicrepository.getComicByFolder(folderId).map { list ->
             list.sortedWith(
                 compareBy(
                     { extractNumber(it.judul ?: "") },
@@ -23,6 +22,7 @@ class PdfReaderViewModel(application: Application): AndroidViewModel(application
                 )
             )
         }
+    }
 
     private fun extractNumber(name: String): Int {
         val regex = Regex("\\d+")

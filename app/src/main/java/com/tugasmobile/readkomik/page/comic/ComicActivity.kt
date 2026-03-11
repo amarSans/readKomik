@@ -41,7 +41,6 @@ class ComicActivity : AppCompatActivity() {
         }
 
 
-        val savedUri = prefs.getString("folder_uri", null)
 
 
         setSupportActionBar(binding.toolbar)
@@ -87,57 +86,7 @@ class ComicActivity : AppCompatActivity() {
     }
 
 
-    private fun loadPdfFromFolder(folderUri: Uri) {
 
-        contentResolver.takePersistableUriPermission(
-            folderUri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
-        )
-        prefs.edit().putString("folder_uri", folderUri.toString()).apply()
-
-        val hasil = mutableListOf<Pair<String, Uri>>()
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            folderUri,
-            DocumentsContract.getTreeDocumentId(folderUri)
-        )
-
-        contentResolver.query(
-            childrenUri,
-            arrayOf(
-                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                DocumentsContract.Document.COLUMN_MIME_TYPE
-            ),
-            null,
-            null,
-            null
-        )?.use { cursor ->
-            while (cursor.moveToNext()) {
-                val docId = cursor.getString(0)
-                val name = cursor.getString(1)
-                val mime = cursor.getString(2)
-
-                if (mime == "application/pdf")
-                {
-                    val fileUri = DocumentsContract.buildDocumentUriUsingTree(
-                        folderUri,
-                        docId
-                    )
-                    hasil.add(name to fileUri)
-
-                    val comic = Comik(
-                        pdfUrl = fileUri.toString(),
-                        judul = name,
-                        progress = 0,
-                        totalHalaman = 0,
-                        folderId = 0
-                    )
-                    comicViewModel.insert(comic)
-
-                }
-            }
-        }
-    }
     private fun scrollToUnread() {
         val prefs = getSharedPreferences("pdf_prefs", MODE_PRIVATE)
         val lastId = prefs.getInt("last_comic_id", -1)

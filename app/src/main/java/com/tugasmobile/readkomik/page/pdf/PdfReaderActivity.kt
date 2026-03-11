@@ -52,15 +52,23 @@ class PdfReaderActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         val toolbar = binding.toolbar
         val intentComicID = intent.getIntExtra("comic_id", -1)
-        if (intentComicID == -1) return
 
-        comicViewModel.displayComics.observe(this) { list ->
-            comicList = list
+        lifecycleScope.launch {
 
-            currentIndex = comicList.indexOfFirst {
-                it.id == currentComicID
-            }.coerceAtLeast(0)
+            val comic = comicViewModel.getComicById(intentComicID) ?: return@launch
+            val folderId = comic.folderId
+
+            comicViewModel.getComicsByFolder(folderId)
+                .observe(this@PdfReaderActivity) { list ->
+
+                    comicList = list
+
+                    currentIndex = comicList.indexOfFirst {
+                        it.id == intentComicID
+                    }.coerceAtLeast(0)
+                }
         }
+
         loadPdf(intentComicID)
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -260,24 +268,35 @@ class PdfReaderActivity : AppCompatActivity() {
 
         isAppbar = !isAppbar
     }
+
     private fun showPdfListDialog() {
         val dialog = SideSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_pdf_list, null)
 
         val recycler = view.findViewById<RecyclerView>(R.id.recyclerChapters)
-        recycler.layoutManager = LinearLayoutManager(this)
+        val layoutManager = LinearLayoutManager(this)
 
-        val rotatedList = comicList.drop(currentIndex) + comicList.take(currentIndex)
+        recycler.layoutManager = layoutManager
+        currentIndex = comicList.indexOfFirst { it.id == currentComicID }
+            .coerceAtLeast(0)
 
-        recycler.adapter = DialogAdapter(rotatedList, 0) { index ->
-            val realIndex = (index + currentIndex) % comicList.size
+        lateinit var adapter: DialogAdapter
+        adapter = DialogAdapter(comicList, currentIndex) { index ->
 
-            if (realIndex != currentIndex) {
+            if (index != currentIndex) {
                 saveCurrentProgress()
-                currentIndex = realIndex
+                currentIndex = index
+                adapter.updateSelected(index)
                 loadPdf(comicList[currentIndex].id)
             }
+
             dialog.dismiss()
+        }
+
+        recycler.adapter = adapter
+
+        recycler.post {
+            layoutManager.scrollToPositionWithOffset(currentIndex, 0)
         }
 
         dialog.setContentView(view)

@@ -17,7 +17,8 @@ import kotlinx.parcelize.Parcelize
             onDelete = ForeignKey.CASCADE
 )
     ],
-    indices = [Index("folderId")]
+    indices = [Index("folderId"),
+        Index(value = ["folderId","pdfUrl"], unique = true)]
     )
 
 @Parcelize
