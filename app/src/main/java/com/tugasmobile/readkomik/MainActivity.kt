@@ -142,8 +142,9 @@ class MainActivity : AppCompatActivity() {
             while (cursor.moveToNext()) {
 
                 val id = cursor.getLong(idColumn)
-                val name = cursor.getString(nameColumn)
                 val fullPath = cursor.getString(pathColumn) ?: continue
+                val fileName = fullPath.substringAfterLast("/")
+                    .removeSuffix(".pdf")
                 val folderPath = fullPath.substringBeforeLast("/")
                 val uri = Uri.withAppendedPath(collection, id.toString())
 
@@ -151,14 +152,14 @@ class MainActivity : AppCompatActivity() {
                     folderMap[folderPath] = mutableListOf()
                 }
 
-                folderMap[folderPath]!!.add(name to uri)
+                folderMap[folderPath]!!.add(fileName to uri)
             }
         }
 
         folderMap.forEach { (folderPath, pdfs) ->
 
             val folder = FolderComik(
-                folderName = folderPath.substringBeforeLast("/"),
+                folderName = folderPath.substringAfterLast("/"),
                 folderPath = folderPath,
                 totalPdf = pdfs.size
             )

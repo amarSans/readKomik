@@ -13,18 +13,16 @@ import kotlinx.coroutines.launch
 class ComicViewModel(application: Application): AndroidViewModel(application) {
     private val mComicRepository: ComicRepository =
         ComicRepository(application)
-    val displayComics: LiveData<List<Comik>> =
-        mComicRepository.getAllComics().map {
-                list ->
+    fun getComicsByFolder(folderId: Int): LiveData<List<Comik>> {
+        return mComicRepository.getComicByFolder(folderId).map { list ->
             list.sortedWith(
                 compareBy(
                     { extractNumber(it.judul ?: "") },
                     { it.judul?.lowercase() ?: "" }
                 )
             )
-
-
         }
+    }
 
     private fun extractNumber(name: String): Int {
         val regex = Regex("\\d+")

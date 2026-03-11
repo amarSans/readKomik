@@ -41,6 +41,10 @@ class ComicRepository(application: Application) {
         return folderDao.getFolderByPath(path)
     }
 
+    fun getComicByFolder(folderId: Int): LiveData<List<Comik>> {
+        return comicDao.getComicByFolder(folderId)
+    }
+
 
 
     suspend fun insert(comic: Comik) {

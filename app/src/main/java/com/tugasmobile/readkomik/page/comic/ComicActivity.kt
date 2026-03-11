@@ -25,17 +25,22 @@ class ComicActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityComicBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        comicViewModel = ViewModelProvider(this)[comicViewModel::class.java]
+        comicViewModel = ViewModelProvider(this)[ComicViewModel::class.java]
 
         setSupportActionBar(binding.toolbar)
 
         setupRecycler()
+        val folderId = intent.getIntExtra("comic_id", -1)
 
-        comicViewModel.displayComics.observe(this) { comics ->
-            comicList.clear()
-            comicList.addAll(comics)
-            pdfAdapter.notifyDataSetChanged()
+        if (folderId != -1) {
+            comicViewModel.getComicsByFolder(folderId).observe(this) { comics ->
+                comicList.clear()
+                comicList.addAll(comics)
+                pdfAdapter.notifyDataSetChanged()
+            }
         }
+
+
         val savedUri = prefs.getString("folder_uri", null)
 
 
