@@ -310,7 +310,9 @@ class PdfReaderActivity : AppCompatActivity() {
     }
     private fun saveCurrentProgress() {
         if (currentComicID != -1 && lastSavedPage >= 0) {
-            comicViewModel.updateProgress(currentComicID, lastSavedPage)
+            lifecycleScope.launch {
+                comicViewModel.updateProgress(currentComicID, lastSavedPage)
+            }
         }
     }
 

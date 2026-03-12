@@ -172,15 +172,19 @@ class MainActivity : AppCompatActivity() {
                 mainViewModel.insertFolder(folder)
             }
             pdfs.forEach { (name, uri) ->
-                val comic = Comik(
-                    folderId = folderId,
-                    pdfUrl = uri.toString(),
-                    judul = name,
-                    progress = 0,
-                    totalHalaman = 0
-                )
+                val existingComic = mainViewModel.getComicByUrl(uri.toString())
 
-                mainViewModel.insert(comic)
+                if (existingComic == null) {
+                    val comic = Comik(
+                        folderId = folderId,
+                        pdfUrl = uri.toString(),
+                        judul = name,
+                        progress = 0,
+                        totalHalaman = 0
+                    )
+
+                    mainViewModel.insert(comic)
+                }
             }
         }
     }

@@ -72,5 +72,10 @@ class ComicRepository(application: Application) {
 
     }
 
+    suspend fun getComicByUrl(url: String): Comik? {
+        return comicDao.getComicByUrl(url)
+    }
+
+
 
 }

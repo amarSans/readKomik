@@ -49,8 +49,7 @@ class PdfReaderViewModel(application: Application): AndroidViewModel(application
         }
     }
 
-    fun updateProgress(comikId: Int, page: Int){
-        viewModelScope.launch {
-            comicrepository.updateProgress(comikId, page)
-        } }
+    suspend fun updateProgress(comikId: Int, page: Int){
+        comicrepository.updateProgress(comikId, page)
+    }
 }

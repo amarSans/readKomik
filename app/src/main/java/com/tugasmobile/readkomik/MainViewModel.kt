@@ -50,5 +50,9 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         return mComicRepository.getFolderByPath(path)
     }
 
+    suspend fun getComicByUrl(url: String): Comik? {
+        return mComicRepository.getComicByUrl(url)
+    }
+
 
 }

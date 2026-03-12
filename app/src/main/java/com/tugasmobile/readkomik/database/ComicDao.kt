@@ -34,7 +34,8 @@ interface ComicDao {
     @Query("SELECT * FROM comik WHERE folderId = :folderId ")
     fun getComicByFolder(folderId: Int): LiveData<List<Comik>>
 
-
+    @Query("SELECT * FROM comik WHERE pdfUrl = :url LIMIT 1")
+    suspend fun getComicByUrl(url: String): Comik?
 
 
 

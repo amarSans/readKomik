@@ -30,7 +30,7 @@ data class Comik(
     var folderId: Int,
 
     @ColumnInfo(name = "pdfUrl")
-    var pdfUrl:String?=null,
+    var pdfUrl:String,
 
     @ColumnInfo(name = "judul")
     var judul: String?=null,
