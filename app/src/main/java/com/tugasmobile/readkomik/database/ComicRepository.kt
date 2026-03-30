@@ -76,6 +76,11 @@ class ComicRepository(application: Application) {
         return comicDao.getComicByUrl(url)
     }
 
+    suspend fun getFolderById(idFolder: Int): FolderComik? {
+        return folderDao.getFolderById(idFolder)
+    }
+
+
 
 
 }

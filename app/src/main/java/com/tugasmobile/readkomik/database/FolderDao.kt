@@ -25,4 +25,7 @@ interface FolderDao {
 
     @Query("SELECT * FROM folders WHERE folderPath = :path LIMIT 1")
     suspend fun getFolderByPath(path: String): FolderComik?
+
+    @Query("SELECT * FROM folders WHERE idFolder = :idFolder LIMIT 1")
+    suspend fun getFolderById(idFolder: Int): FolderComik?
 }

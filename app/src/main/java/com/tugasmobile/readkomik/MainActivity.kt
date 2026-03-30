@@ -1,13 +1,17 @@
 package com.tugasmobile.readkomik
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -16,6 +20,7 @@ import com.tugasmobile.readkomik.data.Comik
 import com.tugasmobile.readkomik.data.FolderComik
 import com.tugasmobile.readkomik.databinding.ActivityMainBinding
 import com.tugasmobile.readkomik.page.comic.ComicActivity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -23,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var mainViewModel: MainViewModel
     private val folderList = mutableListOf<FolderComik>()
+    private var animator: ObjectAnimator? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -33,33 +39,16 @@ class MainActivity : AppCompatActivity() {
 
         setupRecycler()
 
-        mainViewModel.displayFolder.observe(this) { comics ->
-            folderList.clear()
-            folderList.addAll(comics)
-            folderAdapter.notifyDataSetChanged()
-        }
-        if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            == android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            startRefreshAnimation()
-            lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                scanAllPdf()
-                runOnUiThread { stopRefreshAnimation() }
-            }
-        } else {
-            requestPermissions(
-                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
-                100
-            )
-        }
+
         setSupportActionBar(binding.toolbar)
 
         binding.refresh.setOnClickListener {
-            startRefreshAnimation()
-            lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                scanAllPdf()
-                runOnUiThread { stopRefreshAnimation() }
-            }
+            folderPicker.launch(null)
+        }
+        mainViewModel.displayFolder.observe(this) { folders ->
+            folderList.clear()
+            folderList.addAll(folders)
+            folderAdapter.notifyDataSetChanged()
         }
 
 
@@ -85,93 +74,77 @@ class MainActivity : AppCompatActivity() {
         binding.rvPdf.layoutManager = GridLayoutManager(this, 2)
         binding.rvPdf.adapter = folderAdapter
 
-
-
     }
 
+    private suspend fun scanFolder(folderUri: Uri) {
 
-    private suspend fun scanAllPdf() {
 
         val folderMap = mutableMapOf<String, MutableList<Pair<String, Uri>>>()
 
-        val projection =
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                arrayOf(
-                    MediaStore.Files.FileColumns._ID,
-                    MediaStore.Files.FileColumns.DISPLAY_NAME,
-                    MediaStore.Files.FileColumns.RELATIVE_PATH,
-                    MediaStore.Files.FileColumns.MIME_TYPE
-                )
-            } else {
-                arrayOf(
-                    MediaStore.Files.FileColumns._ID,
-                    MediaStore.Files.FileColumns.DISPLAY_NAME,
-                    MediaStore.Files.FileColumns.DATA,
-                    MediaStore.Files.FileColumns.MIME_TYPE
-                )
-            }
+        val root = DocumentFile.fromTreeUri(this, folderUri) ?: return
 
-        val selection = "${MediaStore.Files.FileColumns.MIME_TYPE}=?"
-        val selectionArgs = arrayOf("application/pdf")
+        fun scanRecursive(folder: DocumentFile) {
+            folder.listFiles().forEach { file ->
 
-        val collection = MediaStore.Files.getContentUri("external")
-
-        contentResolver.query(
-            collection,
-            projection,
-            selection,
-            selectionArgs,
-            null
-        )?.use { cursor ->
-
-            val idColumn = cursor.getColumnIndexOrThrow(
-                MediaStore.Files.FileColumns._ID
-            )
-
-            val nameColumn = cursor.getColumnIndexOrThrow(
-                MediaStore.Files.FileColumns.DISPLAY_NAME
-            )
-
-            val pathColumn =
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.RELATIVE_PATH)
+                if (file.isDirectory) {
+                    scanRecursive(file)
                 } else {
-                    cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
+
+                    // ✅ SAFE NAME
+                    val name = file.name?.trim()
+                    if (name.isNullOrEmpty()) return@forEach
+
+                    // ✅ FILTER PDF
+                    if (!name.lowercase().endsWith(".pdf")) return@forEach
+
+                    // ✅ SAFE PARENT
+                    val parent = file.parentFile?.name
+                        ?.trim()
+                        .takeUnless { it.isNullOrEmpty() }
+                        ?: "Unknown"
+
+                    // ✅ SAFE TITLE (tanpa .pdf)
+                    val title = name.removeSuffix(".pdf").ifBlank { "No Title" }
+
+                    // ✅ SAFE URI
+                    val uri = file.uri ?: return@forEach
+                    val uriString = uri.toString().ifBlank { return@forEach }
+
+                    // DEBUG (opsional tapi disarankan)
+                    Log.d("PDF_DEBUG", "TITLE: $title | PARENT: $parent")
+
+                    if (!folderMap.containsKey(parent)) {
+                        folderMap[parent] = mutableListOf()
+                    }
+
+                    folderMap[parent]!!.add(title to uri)
                 }
-
-            while (cursor.moveToNext()) {
-
-                val id = cursor.getLong(idColumn)
-                val fullPath = cursor.getString(pathColumn) ?: continue
-                val fileName = fullPath.substringAfterLast("/")
-                    .removeSuffix(".pdf")
-                val folderPath = fullPath.substringBeforeLast("/")
-                val uri = Uri.withAppendedPath(collection, id.toString())
-
-                if (!folderMap.containsKey(folderPath)) {
-                    folderMap[folderPath] = mutableListOf()
-                }
-
-                folderMap[folderPath]!!.add(fileName to uri)
             }
         }
 
-        folderMap.forEach { (folderPath, pdfs) ->
+        scanRecursive(root)
+
+        // =========================
+        // SIMPAN KE ROOM
+        // =========================
+        folderMap.forEach { (folderName, pdfs) ->
 
             val folder = FolderComik(
-                folderName = folderPath.substringAfterLast("/"),
-                folderPath = folderPath,
+                folderName = folderName,
+                folderPath = folderName,
                 totalPdf = pdfs.size
             )
 
-            val existingFolder = mainViewModel.getFolderByPath(folderPath)
+            val existingFolder = mainViewModel.getFolderByPath(folderName)
 
             val folderId = if (existingFolder != null) {
                 existingFolder.idFolder
             } else {
                 mainViewModel.insertFolder(folder)
             }
+
             pdfs.forEach { (name, uri) ->
+
                 val existingComic = mainViewModel.getComicByUrl(uri.toString())
 
                 if (existingComic == null) {
@@ -203,14 +176,20 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+    private val folderPicker =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            uri?.let {
+                contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
 
-    private fun startRefreshAnimation() {
-        val refreshAnimation = AnimationUtils.loadAnimation(this, R.anim.rotation)
-        binding.refresh.startAnimation(refreshAnimation)
-    }
+                lifecycleScope.launch(Dispatchers.IO) {
+                    scanFolder(it)
+                }
+            }
+        }
 
-    private fun stopRefreshAnimation() {
-        binding.refresh.clearAnimation()
-    }
+
 
 }

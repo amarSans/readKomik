@@ -104,9 +104,6 @@ class PdfReaderActivity : AppCompatActivity() {
         isAppbar = false
         binding.bottomNavigation.visibility = View.INVISIBLE
 
-
-
-
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_pdf_reader, menu)

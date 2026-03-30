@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.car.ui.lib)
+    implementation(libs.androidx.documentfile)
     testImplementation(libs.junit)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

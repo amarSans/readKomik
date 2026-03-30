@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.tugasmobile.readkomik.data.Comik
 import com.tugasmobile.readkomik.data.FolderComik
 
-@Database(entities = [Comik::class, FolderComik::class], version = 2, exportSchema = false)
+@Database(entities = [Comik::class, FolderComik::class], version = 1, exportSchema = false)
 abstract class DatabaseComic : RoomDatabase() {
 
     abstract fun comicDao(): ComicDao

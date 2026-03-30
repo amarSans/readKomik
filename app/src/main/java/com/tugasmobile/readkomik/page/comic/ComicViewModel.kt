@@ -8,6 +8,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.tugasmobile.readkomik.database.ComicRepository
 import com.tugasmobile.readkomik.data.Comik
+import com.tugasmobile.readkomik.data.FolderComik
 import kotlinx.coroutines.launch
 
 class ComicViewModel(application: Application): AndroidViewModel(application) {
@@ -33,6 +34,10 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
 
     fun insert(comic: Comik){
         viewModelScope.launch { mComicRepository.insert(comic) }
+    }
+
+    suspend fun getFolderById(idFolder: Int): FolderComik? {
+        return mComicRepository.getFolderById(idFolder)
     }
 
 

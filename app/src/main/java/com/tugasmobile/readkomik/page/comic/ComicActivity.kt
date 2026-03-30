@@ -8,12 +8,14 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tugasmobile.readkomik.R
 import com.tugasmobile.readkomik.adapter.PdfAdapter
 import com.tugasmobile.readkomik.data.Comik
 import com.tugasmobile.readkomik.databinding.ActivityComicBinding
 import com.tugasmobile.readkomik.page.pdf.PdfReaderActivity
+import kotlinx.coroutines.launch
 
 class ComicActivity : AppCompatActivity() {
     private lateinit var binding: ActivityComicBinding
@@ -33,21 +35,18 @@ class ComicActivity : AppCompatActivity() {
         val folderId = intent.getIntExtra("comic_id", -1)
 
         if (folderId != -1) {
+            lifecycleScope.launch {
+                val folder = comicViewModel.getFolderById(folderId)
+                supportActionBar?.title = folder?.folderName ?: "Folder"
+            }
             comicViewModel.getComicsByFolder(folderId).observe(this) { comics ->
                 comicList.clear()
                 comicList.addAll(comics)
                 pdfAdapter.notifyDataSetChanged()
             }
         }
-
-
-
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setSupportActionBar(binding.toolbar)
-
-
-
-
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -111,6 +110,10 @@ class ComicActivity : AppCompatActivity() {
             }
             R.id.action_last_read -> {
                 lastRead()
+                true
+            }
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
                 true
             }
 

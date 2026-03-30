@@ -33,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/tambah"
-        android:src="@drawable/refresh"
+        android:src="@drawable/baseline_add_24"
         app:backgroundTint="?attr/colorSecondary"
         app:tint="?attr/colorOnSecondary"
         app:layout_constraintEnd_toEndOf="parent"
