@@ -80,6 +80,15 @@ class ComicRepository(application: Application) {
         return folderDao.getFolderById(idFolder)
     }
 
+    suspend fun getLastReadInFolder(folderId: Int): Comik? {
+        return comicDao.getLastReadInFolder(folderId)
+    }
+
+    suspend fun updateLastRead(comicId: Int, time: Long) {
+        comicDao.updateLastRead(comicId, time)
+    }
+
+
 
 
 

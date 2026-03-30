@@ -41,4 +41,7 @@ data class Comik(
     @ColumnInfo(name = "totalHalaman")
     var totalHalaman:Int=0,
 
+    @ColumnInfo(name = "lastReadTime")
+    var lastReadTime: Long = 0
+
     ): Parcelable

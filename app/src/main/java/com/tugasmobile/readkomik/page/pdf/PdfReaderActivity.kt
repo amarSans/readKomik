@@ -42,6 +42,8 @@ class PdfReaderActivity : AppCompatActivity() {
 
     private lateinit var comicViewModel: PdfReaderViewModel
     private var isAppbar = false
+
+    var lastUpdateTime = 0L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPdfReaderBinding.inflate(layoutInflater)
@@ -203,14 +205,23 @@ class PdfReaderActivity : AppCompatActivity() {
                         totalPageSaved = true
                     }
                 }
+
                 .onPageChange { page, pageCount ->
                     if (page != lastSavedPage) {
                         lastSavedPage = page
 
-                        getSharedPreferences("pdf_prefs",MODE_PRIVATE)
-                            .edit()
-                            .putInt("last_comic_id", comicID)
-                            .apply()
+
+                        val now = System.currentTimeMillis()
+
+                        lifecycleScope.launch {
+                            comicViewModel.updateProgress(comicID, page)
+
+                            // update last read tiap 2 detik saja
+                            if (now - lastUpdateTime > 2000) {
+                                comicViewModel.updateLastRead(comicID)
+                                lastUpdateTime = now
+                            }
+                        }
                     }
                     if (page == pageCount - 1 ) {
                         val checkEndOfScroll = object : Runnable {
@@ -303,6 +314,11 @@ class PdfReaderActivity : AppCompatActivity() {
         super.onStop()
         stopEverything()
         saveCurrentProgress()
+        lifecycleScope.launch {
+            if (currentComicID != -1) {
+                comicViewModel.updateLastRead(currentComicID)
+            }
+        }
 
     }
     private fun saveCurrentProgress() {

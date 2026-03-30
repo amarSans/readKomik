@@ -37,6 +37,19 @@ interface ComicDao {
     @Query("SELECT * FROM comik WHERE pdfUrl = :url LIMIT 1")
     suspend fun getComicByUrl(url: String): Comik?
 
+    @Query("""
+    SELECT * FROM comik 
+    WHERE folderId = :folderId 
+    ORDER BY lastReadTime DESC 
+    LIMIT 1
+""")
+    suspend fun getLastReadInFolder(folderId: Int): Comik?
 
+    @Query("""
+    UPDATE comik 
+    SET lastReadTime = :time 
+    WHERE id = :comicId
+""")
+    suspend fun updateLastRead(comicId: Int, time: Long)
 
 }

@@ -10,5 +10,4 @@ data class FolderComik(
     val folderName: String,
     val folderPath: String,
     val totalPdf: Int,
-    val lastRead: String? = null
 )

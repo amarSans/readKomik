@@ -39,6 +39,12 @@ class ComicViewModel(application: Application): AndroidViewModel(application) {
     suspend fun getFolderById(idFolder: Int): FolderComik? {
         return mComicRepository.getFolderById(idFolder)
     }
+    suspend fun getLastReadInFolder(folderId: Int): Comik? {
+        return mComicRepository.getLastReadInFolder(folderId)
+    }
 
+    suspend fun updateLastRead(comicId: Int, time: Long) {
+        mComicRepository.updateLastRead(comicId, time)
+    }
 
 }

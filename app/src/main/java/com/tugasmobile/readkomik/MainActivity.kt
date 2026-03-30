@@ -5,7 +5,6 @@ import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.animation.LinearInterpolator
@@ -28,7 +27,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var folderAdapter: FolderAdapter
     private lateinit var mainViewModel: MainViewModel
     private val folderList = mutableListOf<FolderComik>()
+    private var lastFolderUri: Uri? = null
     private var animator: ObjectAnimator? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -44,6 +45,23 @@ class MainActivity : AppCompatActivity() {
 
         binding.refresh.setOnClickListener {
             folderPicker.launch(null)
+        }
+        binding.swipeRefresh.setOnRefreshListener {
+
+            startRotateAnimation()
+
+            lastFolderUri?.let { uri ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    scanFolder(uri)
+
+                    launch(Dispatchers.Main) {
+                        stopRotateAnimation()
+                        binding.swipeRefresh.isRefreshing = false
+                    }
+                }
+            } ?: run {
+                binding.swipeRefresh.isRefreshing = false
+            }
         }
         mainViewModel.displayFolder.observe(this) { folders ->
             folderList.clear()
@@ -90,28 +108,21 @@ class MainActivity : AppCompatActivity() {
                     scanRecursive(file)
                 } else {
 
-                    // ✅ SAFE NAME
                     val name = file.name?.trim()
                     if (name.isNullOrEmpty()) return@forEach
 
-                    // ✅ FILTER PDF
                     if (!name.lowercase().endsWith(".pdf")) return@forEach
 
-                    // ✅ SAFE PARENT
                     val parent = file.parentFile?.name
                         ?.trim()
                         .takeUnless { it.isNullOrEmpty() }
                         ?: "Unknown"
 
-                    // ✅ SAFE TITLE (tanpa .pdf)
                     val title = name.removeSuffix(".pdf").ifBlank { "No Title" }
 
-                    // ✅ SAFE URI
                     val uri = file.uri ?: return@forEach
                     val uriString = uri.toString().ifBlank { return@forEach }
 
-                    // DEBUG (opsional tapi disarankan)
-                    Log.d("PDF_DEBUG", "TITLE: $title | PARENT: $parent")
 
                     if (!folderMap.containsKey(parent)) {
                         folderMap[parent] = mutableListOf()
@@ -176,19 +187,49 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+    private fun startRotateAnimation() {
+        animator = ObjectAnimator.ofFloat(binding.refresh, "rotation", 0f, 360f).apply {
+            duration = 800
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = LinearInterpolator()
+            start()
+        }
+    }
+
+    private fun stopRotateAnimation() {
+        animator?.cancel()
+        binding.refresh.rotation = 0f
+    }
     private val folderPicker =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri?.let {
+                lastFolderUri = it
+
                 contentResolver.takePersistableUriPermission(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
 
+                setLoading(true)
+
                 lifecycleScope.launch(Dispatchers.IO) {
                     scanFolder(it)
+
+                    launch(Dispatchers.Main) {
+                        setLoading(false)
+                    }
                 }
             }
         }
+    private fun setLoading(isLoading: Boolean) {
+        if (isLoading) {
+            binding.swipeRefresh.isRefreshing = true
+            startRotateAnimation()
+        } else {
+            binding.swipeRefresh.isRefreshing = false
+            stopRotateAnimation()
+        }
+    }
 
 
 

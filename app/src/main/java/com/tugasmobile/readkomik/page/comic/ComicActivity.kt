@@ -54,20 +54,28 @@ class ComicActivity : AppCompatActivity() {
     }
 
     private fun bukaPdf(comik: Comik) {
+
+        lifecycleScope.launch {
+            comicViewModel.updateLastRead(comik.id, System.currentTimeMillis())
+        }
+
         val intent = Intent(this, PdfReaderActivity::class.java).apply {
             putExtra("comic_id", comik.id)
         }
         startActivity(intent)
     }
     private fun lastRead() {
-        val prefs = getSharedPreferences("pdf_prefs", MODE_PRIVATE)
-        val lastId = prefs.getInt("last_comic_id", -1)
+        val folderId = intent.getIntExtra("comic_id", -1)
 
-        if (lastId == -1) return
+        lifecycleScope.launch {
+            val lastComic = comicViewModel.getLastReadInFolder(folderId)
 
-        val intent = Intent(this, PdfReaderActivity::class.java)
-        intent.putExtra("comic_id", lastId)
-        startActivity(intent)
+            lastComic?.let {
+                val intent = Intent(this@ComicActivity, PdfReaderActivity::class.java)
+                intent.putExtra("comic_id", it.id)
+                startActivity(intent)
+            }
+        }
     }
 
     private fun setupRecycler() {
@@ -87,17 +95,20 @@ class ComicActivity : AppCompatActivity() {
 
 
     private fun scrollToUnread() {
-        val prefs = getSharedPreferences("pdf_prefs", MODE_PRIVATE)
-        val lastId = prefs.getInt("last_comic_id", -1)
-        val position = comicList.indexOfFirst { comic ->
-            comicList.indexOf(comic) != -1 && comic.id == lastId
-        }
-        if (position != -1) {
-            binding.rvPdf.post{
-                binding.rvPdf.smoothScrollToPosition(position)
+        val folderId = intent.getIntExtra("comic_id", -1)
+
+        lifecycleScope.launch {
+            val lastComic = comicViewModel.getLastReadInFolder(folderId)
+
+            val position = comicList.indexOfFirst { it.id == lastComic?.id }
+
+            if (position != -1) {
+                binding.rvPdf.post {
+                    binding.rvPdf.smoothScrollToPosition(position)
+                }
+            } else {
+                binding.rvPdf.smoothScrollToPosition(0)
             }
-        } else {
-            binding.rvPdf.smoothScrollToPosition(0)
         }
     }
 

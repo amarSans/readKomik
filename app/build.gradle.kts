@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -62,5 +63,6 @@ dependencies {
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     androidTestImplementation(libs.androidx.junit)
+    implementation(libs.androidx.swiperefreshlayout)
     androidTestImplementation(libs.androidx.espresso.core)
 }
