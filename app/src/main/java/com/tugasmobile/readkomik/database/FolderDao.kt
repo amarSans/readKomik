@@ -17,8 +17,9 @@ interface FolderDao {
     @Update
     suspend fun update(folder: FolderComik)
 
-    @Delete
-    suspend fun delete(folder: FolderComik)
+
+    @Query("DELETE FROM folders")
+    suspend fun deleteAll()
 
     @Query("SELECT * FROM folders ORDER BY folderName ASC")
     fun getAllFolders(): LiveData<List<FolderComik>>

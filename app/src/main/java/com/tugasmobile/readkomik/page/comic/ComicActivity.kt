@@ -4,12 +4,15 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.tugasmobile.readkomik.R
 import com.tugasmobile.readkomik.adapter.PdfAdapter
 import com.tugasmobile.readkomik.data.Comik
@@ -20,7 +23,6 @@ import kotlinx.coroutines.launch
 class ComicActivity : AppCompatActivity() {
     private lateinit var binding: ActivityComicBinding
     private lateinit var pdfAdapter: PdfAdapter
-    private val prefs by lazy { getSharedPreferences("pdf_prefs", MODE_PRIVATE) }
     private lateinit var comicViewModel: ComicViewModel
     private val comicList = mutableListOf<Comik>()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +49,8 @@ class ComicActivity : AppCompatActivity() {
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setSupportActionBar(binding.toolbar)
+
+
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)

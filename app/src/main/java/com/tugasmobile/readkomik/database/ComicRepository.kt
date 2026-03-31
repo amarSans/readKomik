@@ -29,13 +29,12 @@ class ComicRepository(application: Application) {
         return folderDao.getAllFolders()
     }
 
-    suspend fun deleteFolder(folder: FolderComik) {
-        folderDao.delete(folder)
+    suspend fun deleteAll() {
+        comicDao.deleteAll()
+        folderDao.deleteAll()
     }
 
-    suspend fun update(folder: FolderComik) {
-        folderDao.update(folder)
-    }
+
 
     suspend fun getFolderByPath(path: String): FolderComik? {
         return folderDao.getFolderByPath(path)
@@ -50,9 +49,7 @@ class ComicRepository(application: Application) {
     suspend fun insert(comic: Comik) {
          comicDao.insert(comic)
     }
-    suspend fun deleteAll() {
-        comicDao.deleteAll()
-    }
+
     fun update(comic: Comik){
         executorService.execute {
             comicDao.update(comic)

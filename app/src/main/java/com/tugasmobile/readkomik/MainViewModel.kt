@@ -38,9 +38,10 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch { mComicRepository.insert(comic) }
     }
 
-    fun deleteAll(){
-        viewModelScope.launch { mComicRepository.deleteAll() }
+    suspend fun deleteAll() {
+        mComicRepository.deleteAll()
     }
+
 
     suspend fun insertFolder(folder: FolderComik): Int {
         return mComicRepository.insertFolder(folder)

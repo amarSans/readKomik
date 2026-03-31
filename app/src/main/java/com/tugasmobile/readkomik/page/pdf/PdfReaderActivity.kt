@@ -66,7 +66,7 @@ class PdfReaderActivity : AppCompatActivity() {
                     comicList = list
 
                     currentIndex = comicList.indexOfFirst {
-                        it.id == intentComicID
+                        it.id == currentComicID
                     }.coerceAtLeast(0)
                 }
         }
@@ -81,17 +81,35 @@ class PdfReaderActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_next -> {
+                    if (isTransitioning) return@setOnItemSelectedListener true
+
+                    stopEverything() // 🔥 penting
+
                     if (currentIndex < comicList.lastIndex) {
+                        isTransitioning = true
                         currentIndex++
                         loadPdf(comicList[currentIndex].id)
+
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            isTransitioning = false
+                        }, 500)
                     }
                     true
                 }
 
                 R.id.nav_back -> {
+                    if (isTransitioning) return@setOnItemSelectedListener true
+
+                    stopEverything() // 🔥 hentikan semua handler
+
                     if (currentIndex > 0) {
+                        isTransitioning = true
                         currentIndex--
                         loadPdf(comicList[currentIndex].id)
+
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            isTransitioning = false
+                        }, 500)
                     }
                     true
                 }
@@ -171,7 +189,10 @@ class PdfReaderActivity : AppCompatActivity() {
 
     }
     private fun stopEverything() {
-        toggleAutoScroll(false)
+        isAutoScrollEnabled = false
+        scrollontab = false
+        autoScrollHandler.removeCallbacksAndMessages(null) // 🔥 WAJIB
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun loadPdf(comicID: Int) {
@@ -223,12 +244,16 @@ class PdfReaderActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    if (page == pageCount - 1 ) {
-                        val checkEndOfScroll = object : Runnable {
+                    if (page == pageCount - 1 && isAutoScrollEnabled) {
+                        autoScrollHandler.postDelayed(object : Runnable {
                             override fun run() {
+                                if (!isAutoScrollEnabled) return
                                 if (isTransitioning) return
+
                                 val currentY = binding.pdfView.currentYOffset
-                                if (currentY == binding.pdfView.currentYOffset && currentY != 0f && scrollontab==true) {
+                                val newY = binding.pdfView.currentYOffset
+
+                                if (currentY == newY && currentY != 0f) {
                                     handleEndOfComic()
                                 } else {
                                     if (binding.pdfView.currentPage == binding.pdfView.pageCount - 1) {
@@ -236,8 +261,7 @@ class PdfReaderActivity : AppCompatActivity() {
                                     }
                                 }
                             }
-                        }
-                        autoScrollHandler.postDelayed(checkEndOfScroll, 1000)
+                        }, 1000)
                     }
                 }
                 .onTap {
@@ -285,8 +309,11 @@ class PdfReaderActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
 
         recycler.layoutManager = layoutManager
-        currentIndex = comicList.indexOfFirst { it.id == currentComicID }
-            .coerceAtLeast(0)
+        if (currentComicID != -1) {
+            currentIndex = comicList.indexOfFirst {
+                it.id == currentComicID
+            }.coerceAtLeast(0)
+        }
 
         lateinit var adapter: DialogAdapter
         adapter = DialogAdapter(comicList, currentIndex) { index ->

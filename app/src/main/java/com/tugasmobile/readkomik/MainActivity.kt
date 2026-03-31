@@ -43,19 +43,17 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        binding.refresh.setOnClickListener {
+        binding.addFolder.setOnClickListener {
             folderPicker.launch(null)
         }
         binding.swipeRefresh.setOnRefreshListener {
 
-            startRotateAnimation()
 
             lastFolderUri?.let { uri ->
                 lifecycleScope.launch(Dispatchers.IO) {
                     scanFolder(uri)
 
                     launch(Dispatchers.Main) {
-                        stopRotateAnimation()
                         binding.swipeRefresh.isRefreshing = false
                     }
                 }
@@ -187,19 +185,9 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-    private fun startRotateAnimation() {
-        animator = ObjectAnimator.ofFloat(binding.refresh, "rotation", 0f, 360f).apply {
-            duration = 800
-            repeatCount = ValueAnimator.INFINITE
-            interpolator = LinearInterpolator()
-            start()
-        }
-    }
 
-    private fun stopRotateAnimation() {
-        animator?.cancel()
-        binding.refresh.rotation = 0f
-    }
+
+
     private val folderPicker =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             uri?.let {
@@ -210,26 +198,13 @@ class MainActivity : AppCompatActivity() {
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
 
-                setLoading(true)
 
                 lifecycleScope.launch(Dispatchers.IO) {
+                    mainViewModel.deleteAll()
                     scanFolder(it)
-
-                    launch(Dispatchers.Main) {
-                        setLoading(false)
-                    }
                 }
             }
         }
-    private fun setLoading(isLoading: Boolean) {
-        if (isLoading) {
-            binding.swipeRefresh.isRefreshing = true
-            startRotateAnimation()
-        } else {
-            binding.swipeRefresh.isRefreshing = false
-            stopRotateAnimation()
-        }
-    }
 
 
 

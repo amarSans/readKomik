@@ -37,9 +37,7 @@ class PdfReaderViewModel(application: Application): AndroidViewModel(application
     fun update(comic: Comik){
         comicrepository.update(comic)
     }
-    fun deleteAll(){
-        viewModelScope.launch { comicrepository.deleteAll() }
-    }
+
     suspend fun getComicById(id: Int): Comik? {
         return comicrepository.getComicById(id)
     }
